@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TFA.Domain", "TFA.Domain\TF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TFA.API", "TFA.API\TFA.API.csproj", "{F6746155-6A94-490F-B44B-34602BF2D26D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TFA.Domain.Tests", "TFA.Domain.Tests\TFA.Domain.Tests.csproj", "{8941E2C4-9E4A-4D1E-BC28-1C724AC70783}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,5 +37,9 @@ Global
 		{F6746155-6A94-490F-B44B-34602BF2D26D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6746155-6A94-490F-B44B-34602BF2D26D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6746155-6A94-490F-B44B-34602BF2D26D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8941E2C4-9E4A-4D1E-BC28-1C724AC70783}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8941E2C4-9E4A-4D1E-BC28-1C724AC70783}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8941E2C4-9E4A-4D1E-BC28-1C724AC70783}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8941E2C4-9E4A-4D1E-BC28-1C724AC70783}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
