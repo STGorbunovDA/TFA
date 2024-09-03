@@ -1,54 +1,28 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using TFA.Domain.Authentication;
 using TFA.Domain.Exceptions;
 using TFA.Domain.Models;
-using TFA.Storage;
 
 namespace TFA.Domain.UseCases.CreateTopic;
 
 public class CreateTopicUseCase : ICreateTopicUseCase
 {
-    private readonly IGuidFactory guidFactory;
-    private readonly IMomentProvider momentProvider;
-    private readonly ForumDbContext dbContext;
+    private readonly ICreateTopicStorage storage;
+    private readonly IIdentityProvider identityProvider;
 
-    public CreateTopicUseCase(
-        IGuidFactory guidFactory,
-        IMomentProvider momentProvider,
-        ForumDbContext dbContext)
+    public CreateTopicUseCase(IIdentityProvider identityProvider, ICreateTopicStorage storage)
     {
-        this.guidFactory = guidFactory;
-        this.momentProvider = momentProvider;
-        this.dbContext = dbContext;
+        this.storage = storage;
+        this.identityProvider = identityProvider;
     }
     
-    public async Task<TopicDomain> Execute(Guid forumId, string title, Guid authorId, CancellationToken cancellationToken)
+    public async Task<TopicDomain> Execute(Guid forumId, string title, CancellationToken cancellationToken)
     {
-        var forumExists = await dbContext.Forums.AnyAsync(f => f.ForumId == forumId, cancellationToken);
+        var forumExists = await storage.ForumExists(forumId, cancellationToken);
         if (!forumExists)
         {
             throw new ForumNotFoundException(forumId);
         }
         
-        var topicId = guidFactory.Create();
-        await dbContext.Topics.AddAsync(new Topic
-        {
-            TopicId = topicId,
-            ForumId = forumId,
-            UserId = authorId,
-            CreatedAt = momentProvider.Now,
-            Title = title
-        }, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        return await dbContext.Topics
-            .Where(t => t.TopicId == topicId)
-            .Select(t => new TopicDomain()
-            {
-                Id = t.TopicId,
-                Title = t.Title,
-                CreatedAt = t.CreatedAt,
-                Author = t.Author.Login
-            })
-            .FirstAsync(cancellationToken);
+        return await storage.CreateTopic(forumId, identityProvider.Current.UserId, title, cancellationToken);
     }
 }
