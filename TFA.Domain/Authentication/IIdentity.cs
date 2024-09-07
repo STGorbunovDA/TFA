@@ -14,3 +14,8 @@ public class User : IIdentity
 
     public Guid UserId { get; }
 }
+
+public static class IdentityExtensions
+{
+    public static bool IsAuthenticated(this IIdentity identity) => identity.UserId != Guid.Empty;
+}
