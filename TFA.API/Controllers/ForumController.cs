@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TFA.API.Models;
-using TFA.Domain.Authorization;
-using TFA.Domain.Exceptions;
 using TFA.Domain.UseCases.CreateTopic;
 using TFA.Domain.UseCases.GetForums;
 
@@ -30,8 +28,9 @@ public class ForumController : ControllerBase
             Title = f.Title
         }));
     }
-    
+
     [HttpPost("{forumId:guid}/topics")]
+    [ProducesResponseType(400)] // Валидация
     [ProducesResponseType(403)] // не разрешены права
     [ProducesResponseType(410)] // нет ресурса (форума)
     [ProducesResponseType(201, Type = typeof(TopicDto))]
@@ -41,24 +40,13 @@ public class ForumController : ControllerBase
         [FromServices] ICreateTopicUseCase useCase,
         CancellationToken cancellationToken)
     {
-        try
+        var command = new CreateTopicCommand(forumId, request.Title);
+        var topic = await useCase.Execute(command, cancellationToken);
+        return CreatedAtRoute(nameof(GetForums), new TopicDto()
         {
-            var topic = await useCase.Execute(forumId, request.Title, cancellationToken);
-            return CreatedAtRoute(nameof(GetForums), new TopicDto()
-            {
-                Id = topic.Id,
-                Title = topic.Title,
-                CreatedAt = topic.CreatedAt
-            });
-        }
-        catch (Exception exception)
-        {
-            return exception switch
-            {
-                IntentionManagerException => Forbid(),
-                ForumNotFoundException => StatusCode(StatusCodes.Status410Gone),
-                _ => StatusCode(StatusCodes.Status500InternalServerError)
-            };
-        }
+            Id = topic.Id,
+            Title = topic.Title,
+            CreatedAt = topic.CreatedAt
+        });
     }
 }
