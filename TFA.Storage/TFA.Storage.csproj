@@ -24,4 +24,10 @@
       <ProjectReference Include="..\TFA.Domain\TFA.Domain.csproj" />
     </ItemGroup>
 
+<!--    <ItemGroup>-->
+<!--        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">-->
+<!--            <_Parameter1>TFA.Storage.DependencyInjection</_Parameter1>-->
+<!--        </AssemblyAttribute>-->
+<!--    </ItemGroup>-->
+
 </Project>

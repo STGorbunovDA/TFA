@@ -9,7 +9,7 @@ public interface IIntentionManager
     bool IsAllowed<TIntention, TObject>(TIntention intention, TObject target) where TIntention : struct;
 }
 
-public class IntentionManager : IIntentionManager
+internal class IntentionManager : IIntentionManager
 {
     private readonly IEnumerable<IIntentionResolver> resolvers;
     private readonly IIdentityProvider identityProvider;

@@ -1,38 +1,30 @@
-using FluentValidation;
-using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Filters;
 using TFA.API.Middlewares;
-using TFA.Domain;
-using TFA.Domain.Authentication;
-using TFA.Domain.Authorization;
-using TFA.Domain.Models;
-using TFA.Domain.UseCases;
-using TFA.Domain.UseCases.CreateTopic;
-using TFA.Domain.UseCases.GetForums;
-using TFA.Storage.Storages;
+using TFA.Domain.DependencyInjection;
+using TFA.Storage.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("Postgres");
+builder.Services.AddLogging(b => b.AddSerilog(new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .Enrich.WithProperty("Application", "TFA.API")
+    .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
+    .WriteTo.Logger(lc => lc
+        .Filter.ByExcluding(Matching.FromSource("Microsoft"))
+        .WriteTo.OpenSearch(
+            builder.Configuration.GetConnectionString("Logs"),
+            "forum-logs-{0:yyyy.MM.dd}"))
+    .WriteTo.Logger(lc => lc.WriteTo.Console())
+    .CreateLogger()));
 
-builder.Services.AddScoped<IGetForumsUseCase, GetForumsUseCase>();
-builder.Services.AddScoped<IGetForumsStorage, GetForumsStorage>();
-builder.Services.AddScoped<ICreateTopicUseCase, CreateTopicUseCase>();
-builder.Services.AddScoped<ICreateTopicStorage, CreateTopicStorage>();
-builder.Services.AddScoped<IIntentionResolver, TopicIntentionResolver>();
-builder.Services.AddScoped<IIntentionManager, IntentionManager>();
-builder.Services.AddScoped<IIdentityProvider, IdentityProvider>();
-
-builder.Services.AddScoped<IGuidFactory, GuidFactory>();
-builder.Services.AddScoped<IMomentProvider, MomentProvider>();
-
-//builder.Services.AddScoped<IValidator<CreateTopicCommand>, CreateTopicCommandValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<ForumDomain>();
+builder.Services
+    .AddForumDomain()
+    .AddForumStorage(builder.Configuration.GetConnectionString("Postgres"));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContextPool<ForumDbContext>(options => options
-    .UseNpgsql(connectionString));
 
 var app = builder.Build();
 

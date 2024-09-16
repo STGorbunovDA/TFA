@@ -1,11 +1,11 @@
 ﻿namespace TFA.Domain;
 
-public interface IMomentProvider
+internal interface IMomentProvider
 {
     DateTimeOffset Now { get; }
 }
 
-public class MomentProvider : IMomentProvider
+internal class MomentProvider : IMomentProvider
 {
     public DateTimeOffset Now => DateTimeOffset.UtcNow;
 }
