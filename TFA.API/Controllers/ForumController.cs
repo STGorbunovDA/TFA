@@ -2,6 +2,7 @@
 using TFA.API.Models;
 using TFA.Domain.UseCases.CreateTopic;
 using TFA.Domain.UseCases.GetForums;
+using TFA.Domain.UseCases.GetTopics;
 
 namespace TFA.API.Controllers;
 
@@ -48,5 +49,26 @@ public class ForumController : ControllerBase
             Title = topic.Title,
             CreatedAt = topic.CreatedAt
         });
+    }
+    
+    [HttpGet("{forumId:guid}/topics")]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(410)]
+    [ProducesResponseType(200)]
+    public async Task<IActionResult> GetTopics(
+        [FromRoute] Guid forumId,
+        [FromQuery] int skip,
+        [FromQuery] int take,
+        [FromServices] IGetTopicsUseCase useCase,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetTopicsQuery(forumId, skip, take);
+        var (resources, totalCount) = await useCase.Execute(query, cancellationToken);
+        return Ok(new { resources = resources.Select(r => new TopicDto()
+        {
+            Id = r.Id,
+            Title = r.Title,
+            CreatedAt = r.CreatedAt,
+        }), totalCount });
     }
 }

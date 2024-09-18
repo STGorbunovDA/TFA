@@ -22,9 +22,6 @@ internal class CreateTopicStorage : ICreateTopicStorage
         this.dbContext = dbContext;
     }
 
-    public Task<bool> ForumExists(Guid forumId, CancellationToken cancellationToken) =>
-        dbContext.Forums.AnyAsync(f => f.ForumId == forumId, cancellationToken);
-
     public async Task<TopicDomain> CreateTopic(Guid forumId, Guid userId, string title,
         CancellationToken cancellationToken)
     {
