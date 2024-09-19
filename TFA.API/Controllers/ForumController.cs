@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using TFA.API.Models;
+using TFA.Domain.UseCases.CreateForum;
 using TFA.Domain.UseCases.CreateTopic;
 using TFA.Domain.UseCases.GetForums;
 using TFA.Domain.UseCases.GetTopics;
+
 
 namespace TFA.API.Controllers;
 
@@ -10,24 +13,38 @@ namespace TFA.API.Controllers;
 [Route("forums")]
 public class ForumController : ControllerBase
 {
+    [HttpPost]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(201, Type = typeof(ForumDto))]
+    public async Task<IActionResult> CreateForum(
+        [FromBody] CreateForumDto request,
+        [FromServices] ICreateForumUseCase useCase,
+        [FromServices] IMapper mapper,
+        CancellationToken cancellationToken)
+    {
+        var command = new CreateForumCommand(request.Title);
+        var forum = await useCase.Execute(command, cancellationToken);
+        return CreatedAtRoute(nameof(GetForums), mapper.Map<ForumDto>(forum));
+    }
+
+
     /// <summary>
     /// Get list of every forum
     /// </summary>
     /// <param name="useCase"></param>
+    /// <param name="mapper"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet(Name = nameof(GetForums))]
     [ProducesResponseType(200, Type = typeof(ForumDto[]))]
     public async Task<IActionResult> GetForums(
         [FromServices] IGetForumsUseCase useCase,
+        [FromServices] IMapper mapper,
         CancellationToken cancellationToken)
     {
         var forums = await useCase.Execute(cancellationToken);
-        return Ok(forums.Select(f => new ForumDto
-        {
-            Id = f.Id,
-            Title = f.Title
-        }));
+        return Ok(forums.Select(mapper.Map<ForumDto>));
     }
 
     [HttpPost("{forumId:guid}/topics")]
@@ -39,16 +56,12 @@ public class ForumController : ControllerBase
         Guid forumId,
         [FromBody] CreateTopicDto request,
         [FromServices] ICreateTopicUseCase useCase,
+        [FromServices] IMapper mapper,
         CancellationToken cancellationToken)
     {
         var command = new CreateTopicCommand(forumId, request.Title);
         var topic = await useCase.Execute(command, cancellationToken);
-        return CreatedAtRoute(nameof(GetForums), new TopicDto()
-        {
-            Id = topic.Id,
-            Title = topic.Title,
-            CreatedAt = topic.CreatedAt
-        });
+        return CreatedAtRoute(nameof(GetForums), mapper.Map<TopicDto>(topic));
     }
     
     [HttpGet("{forumId:guid}/topics")]
@@ -60,15 +73,11 @@ public class ForumController : ControllerBase
         [FromQuery] int skip,
         [FromQuery] int take,
         [FromServices] IGetTopicsUseCase useCase,
+        [FromServices] IMapper mapper,
         CancellationToken cancellationToken)
     {
         var query = new GetTopicsQuery(forumId, skip, take);
         var (resources, totalCount) = await useCase.Execute(query, cancellationToken);
-        return Ok(new { resources = resources.Select(r => new TopicDto()
-        {
-            Id = r.Id,
-            Title = r.Title,
-            CreatedAt = r.CreatedAt,
-        }), totalCount });
+        return Ok(new { resources = resources.Select(mapper.Map<TopicDto>), totalCount });
     }
 }
