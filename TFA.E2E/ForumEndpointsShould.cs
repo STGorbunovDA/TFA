@@ -16,6 +16,8 @@ public class ForumEndpointsShould : IClassFixture<ForumApiApplicationFactory>
     [Fact]
     public async Task CreateNewForum()
     {
+        const string forumTitle = "0069517D-CA29-453B-BB4C-AC22F51E690E";
+        
         using var httpClient = factory.CreateClient();
 
         // Проверяем что список форумов пуст
@@ -23,23 +25,23 @@ public class ForumEndpointsShould : IClassFixture<ForumApiApplicationFactory>
         var initialForums = await getInitialForumsResponse.Content.ReadFromJsonAsync<ForumDto[]>();
         initialForums
             .Should().NotBeNull().And
-            .Subject.As<ForumDto[]>().Should().BeEmpty();
+            .Subject.As<ForumDto[]>().Should().NotContain(f => f.Title.Equals(forumTitle));
 
         // создаём форум
         using var response = await httpClient.PostAsync("forums",
-            JsonContent.Create(new { title = "Test" }));
+            JsonContent.Create(new { title = forumTitle }));
         
         response.Invoking(r => r.EnsureSuccessStatusCode()).Should().NotThrow();
         var forum = await response.Content.ReadFromJsonAsync<ForumDto>();
         forum
             .Should().NotBeNull().And
-            .Subject.As<ForumDto>().Title.Should().Be("Test");
+            .Subject.As<ForumDto>().Title.Should().Be(forumTitle);
 
         // Проверяем что форум присутствует
         using var getForumsResponse = await httpClient.GetAsync("forums");
         var forums = await getForumsResponse.Content.ReadFromJsonAsync<ForumDto[]>();
         forums
             .Should().NotBeNull().And
-            .Subject.As<ForumDto[]>().Should().Contain(f => f.Title == "Test");
+            .Subject.As<ForumDto[]>().Should().Contain(f => f.Title == forumTitle);
     }
 }
