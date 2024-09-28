@@ -22,6 +22,7 @@ public class ForumEndpointsShould : IClassFixture<ForumApiApplicationFactory>
 
         // Проверяем что список форумов пуст
         using var getInitialForumsResponse = await httpClient.GetAsync("forums");
+        getInitialForumsResponse.IsSuccessStatusCode.Should().BeTrue();
         var initialForums = await getInitialForumsResponse.Content.ReadFromJsonAsync<ForumDto[]>();
         initialForums
             .Should().NotBeNull().And
@@ -31,7 +32,7 @@ public class ForumEndpointsShould : IClassFixture<ForumApiApplicationFactory>
         using var response = await httpClient.PostAsync("forums",
             JsonContent.Create(new { title = forumTitle }));
         
-        response.Invoking(r => r.EnsureSuccessStatusCode()).Should().NotThrow();
+        response.IsSuccessStatusCode.Should().BeTrue();
         var forum = await response.Content.ReadFromJsonAsync<ForumDto>();
         forum
             .Should().NotBeNull().And

@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Testcontainers.PostgreSql;
+using TFA.Storage;
 
 namespace TFA.E2E;
 
@@ -21,6 +23,7 @@ public class ForumApiApplicationFactory : WebApplicationFactory<Program>, IAsync
             })
             .Build();
         builder.UseConfiguration(configuration);
+        builder.ConfigureLogging(cfg => cfg.ClearProviders());
         base.ConfigureWebHost(builder);
     }
 

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using TFA.Storage;
 
 #nullable disable
 
@@ -50,6 +51,51 @@ namespace TFA.Storage.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("TFA.Storage.Entities.Session", b =>
+                {
+                    b.Property<Guid>("SessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("SessionId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Sessions");
+                });
+
+            modelBuilder.Entity("TFA.Storage.Entities.User", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Login")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<byte[]>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("bytea");
+
+                    b.Property<byte[]>("Salt")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("bytea");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("TFA.Storage.Forum", b =>
@@ -100,32 +146,6 @@ namespace TFA.Storage.Migrations
                     b.ToTable("Topics");
                 });
 
-            modelBuilder.Entity("TFA.Storage.User", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Login")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<byte[]>("PasswordHash")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("bytea");
-
-                    b.Property<byte[]>("Salt")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("bytea");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("Users");
-                });
-
             modelBuilder.Entity("TFA.Storage.Comment", b =>
                 {
                     b.HasOne("TFA.Storage.Topic", "Topic")
@@ -134,7 +154,7 @@ namespace TFA.Storage.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TFA.Storage.User", "Author")
+                    b.HasOne("TFA.Storage.Entities.User", "Author")
                         .WithMany("Comments")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -145,6 +165,17 @@ namespace TFA.Storage.Migrations
                     b.Navigation("Topic");
                 });
 
+            modelBuilder.Entity("TFA.Storage.Entities.Session", b =>
+                {
+                    b.HasOne("TFA.Storage.Entities.User", "User")
+                        .WithMany("Sessions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TFA.Storage.Topic", b =>
                 {
                     b.HasOne("TFA.Storage.Forum", "Forum")
@@ -153,7 +184,7 @@ namespace TFA.Storage.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TFA.Storage.User", "Author")
+                    b.HasOne("TFA.Storage.Entities.User", "Author")
                         .WithMany("Topics")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -164,6 +195,15 @@ namespace TFA.Storage.Migrations
                     b.Navigation("Forum");
                 });
 
+            modelBuilder.Entity("TFA.Storage.Entities.User", b =>
+                {
+                    b.Navigation("Comments");
+
+                    b.Navigation("Sessions");
+
+                    b.Navigation("Topics");
+                });
+
             modelBuilder.Entity("TFA.Storage.Forum", b =>
                 {
                     b.Navigation("Topics");
@@ -172,13 +212,6 @@ namespace TFA.Storage.Migrations
             modelBuilder.Entity("TFA.Storage.Topic", b =>
                 {
                     b.Navigation("Comments");
-                });
-
-            modelBuilder.Entity("TFA.Storage.User", b =>
-                {
-                    b.Navigation("Comments");
-
-                    b.Navigation("Topics");
                 });
 #pragma warning restore 612, 618
         }

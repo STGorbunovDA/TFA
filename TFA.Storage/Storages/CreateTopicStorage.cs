@@ -3,6 +3,7 @@ using TFA.Domain;
 using TFA.Domain.Models;
 using TFA.Domain.UseCases;
 using TFA.Domain.UseCases.CreateTopic;
+using TFA.Storage.Entities;
 
 namespace TFA.Storage.Storages;
 
