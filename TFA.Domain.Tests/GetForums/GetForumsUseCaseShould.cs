@@ -2,6 +2,7 @@
 using Moq;
 using Moq.Language.Flow;
 using TFA.Domain.Models;
+using TFA.Domain.Monitoring;
 using TFA.Domain.UseCases.GetForums;
 
 namespace TFA.Domain.Tests.GetForums;
@@ -17,7 +18,7 @@ public class GetForumsUseCaseShould
         storage = new Mock<IGetForumsStorage>();
         getForumsSetup = storage.Setup(s => s.GetForums(It.IsAny<CancellationToken>()));
 
-        sut = new GetForumsUseCase(storage.Object);
+        sut = new GetForumsUseCase(storage.Object, new DomainMetrics());
     }
 
     [Fact]

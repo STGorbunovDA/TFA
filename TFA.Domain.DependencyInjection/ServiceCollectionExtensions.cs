@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TFA.Domain.Authentication;
 using TFA.Domain.Authorization;
 using TFA.Domain.Models;
+using TFA.Domain.Monitoring;
 using TFA.Domain.UseCases.CreateForum;
 using TFA.Domain.UseCases.CreateTopic;
 using TFA.Domain.UseCases.GetForums;
@@ -37,6 +38,8 @@ public static class ServiceCollectionExtensions
             .AddScoped<ISymmetricEncryptor, AesSymmetricEncryptorDecryptor>();
 
         services.AddValidatorsFromAssemblyContaining<ForumDomain>(includeInternalTypes: true);
+        
+        services.AddSingleton<DomainMetrics>();
 
         return services;
     }

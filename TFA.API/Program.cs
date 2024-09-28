@@ -1,15 +1,18 @@
 using System.Reflection;
 using AutoMapper;
 using TFA.API.Authentication;
-using TFA.API.DependencyInjection;
 using TFA.API.Middlewares;
+using TFA.API.Monitoring;
 using TFA.Domain.Authentication;
 using TFA.Domain.DependencyInjection;
 using TFA.Storage.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddApiLogging(builder.Configuration, builder.Environment);
+builder.Services
+    .AddApiLogging(builder.Configuration, builder.Environment)
+    .AddApiMetrics();
+
 builder.Services.Configure<AuthenticationConfiguration>(builder.Configuration.GetSection("Authentication").Bind);
 builder.Services.AddScoped<IAuthTokenStorage, AuthTokenStorage>();
 
@@ -36,6 +39,7 @@ app.UseSwaggerUI();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapPrometheusScrapingEndpoint();
 
 app
     .UseMiddleware<ErrorHandlingMiddleware>()
