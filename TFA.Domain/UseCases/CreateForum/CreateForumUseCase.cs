@@ -1,30 +1,17 @@
-﻿using FluentValidation;
+﻿using MediatR;
 using TFA.Domain.Authorization;
 using TFA.Domain.Models;
 
 namespace TFA.Domain.UseCases.CreateForum;
 
-internal class CreateForumUseCase : ICreateForumUseCase
+internal class CreateForumUseCase(
+    IIntentionManager intentionManager,
+    ICreateForumStorage storage)
+    : IRequestHandler<CreateForumCommand, ForumDomain>
 {
-    private readonly IValidator<CreateForumCommand> validator;
-    private readonly IIntentionManager intentionManager;
-    private readonly ICreateForumStorage storage;
-
-    public CreateForumUseCase(
-        IValidator<CreateForumCommand> validator,
-        IIntentionManager intentionManager,
-        ICreateForumStorage storage)
+    public async Task<ForumDomain> Handle(CreateForumCommand command, CancellationToken cancellationToken)
     {
-        this.validator = validator;
-        this.intentionManager = intentionManager;
-        this.storage = storage;
-    }
-
-    public async Task<ForumDomain> Execute(CreateForumCommand command, CancellationToken cancellationToken)
-    {
-        await validator.ValidateAndThrowAsync(command, cancellationToken);
         intentionManager.ThrowIfForbidden(ForumIntention.Create);
-
         return await storage.Create(command.Title, cancellationToken);
     }
 }

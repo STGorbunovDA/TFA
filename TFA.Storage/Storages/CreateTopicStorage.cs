@@ -1,28 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TFA.Domain;
 using TFA.Domain.Models;
-using TFA.Domain.UseCases;
 using TFA.Domain.UseCases.CreateTopic;
 using TFA.Storage.Entities;
 
 namespace TFA.Storage.Storages;
 
-internal class CreateTopicStorage : ICreateTopicStorage
+internal class CreateTopicStorage(
+    IGuidFactory guidFactory,
+    IMomentProvider momentProvider,
+    ForumDbContext dbContext)
+    : ICreateTopicStorage
 {
-    private readonly IGuidFactory guidFactory;
-    private readonly IMomentProvider momentProvider;
-    private readonly ForumDbContext dbContext;
-
-    public CreateTopicStorage(
-        IGuidFactory guidFactory,
-        IMomentProvider momentProvider,
-        ForumDbContext dbContext)
-    {
-        this.guidFactory = guidFactory;
-        this.momentProvider = momentProvider;
-        this.dbContext = dbContext;
-    }
-
     public async Task<TopicDomain> CreateTopic(Guid forumId, Guid userId, string title,
         CancellationToken cancellationToken)
     {
@@ -41,7 +30,7 @@ internal class CreateTopicStorage : ICreateTopicStorage
 
         return await dbContext.Topics
             .Where(t => t.TopicId == topicId)
-            .Select(t => new TopicDomain()
+            .Select(t => new TopicDomain
             {
                 Id = t.TopicId,
                 ForumId = t.ForumId,

@@ -8,6 +8,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution-items", "solution-
 		README.md = README.md
 		docker-compose.yml = docker-compose.yml
 		prometheus.yml = prometheus.yml
+		loki-config.yml = loki-config.yml
+		.dockerignore = .dockerignore
+		Dockerfile = Dockerfile
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TFA.Storage", "TFA.Storage\TFA.Storage.csproj", "{071D1EFE-0231-4342-A838-D96DE061E5CF}"

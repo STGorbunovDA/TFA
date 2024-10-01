@@ -6,15 +6,8 @@ using TFA.Domain.Exceptions;
 
 namespace TFA.API.Middlewares;
 
-public class ErrorHandlingMiddleware
+public class ErrorHandlingMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate next;
-
-    public ErrorHandlingMiddleware(RequestDelegate next)
-    {
-        this.next = next;
-    }
-
     public async Task InvokeAsync(
         HttpContext httpContext,
         ILogger<ErrorHandlingMiddleware> logger,
@@ -30,7 +23,7 @@ public class ErrorHandlingMiddleware
                 exception,
                 "Error has happened with {RequestPath}, the message is {ErrorMessage}",
                 httpContext.Request.Path.Value, exception.Message);
-            
+
             ProblemDetails problemDetails;
             switch (exception)
             {

@@ -4,16 +4,8 @@ using TFA.Domain.UseCases.GetTopics;
 
 namespace TFA.Storage.Storages;
 
-internal class GetTopicsStorage : IGetTopicsStorage
+internal class GetTopicsStorage(ForumDbContext dbContext) : IGetTopicsStorage
 {
-    private readonly ForumDbContext dbContext;
-
-    public GetTopicsStorage(
-        ForumDbContext dbContext)
-    {
-        this.dbContext = dbContext;
-    }
-
     public async Task<(IEnumerable<TopicDomain> resources, int totalCount)> GetTopics(
         Guid forumId, int skip, int take, CancellationToken cancellationToken)
     {
@@ -21,7 +13,7 @@ internal class GetTopicsStorage : IGetTopicsStorage
 
         var totalCount = await query.CountAsync(cancellationToken);
         var resources = await query
-            .Select(t => new TopicDomain()
+            .Select(t => new TopicDomain
             {
                 Id = t.TopicId,
                 ForumId = t.ForumId,
