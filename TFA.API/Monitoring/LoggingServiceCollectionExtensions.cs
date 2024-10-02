@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -10,9 +11,18 @@ namespace TFA.API.Monitoring;
 internal static class LoggingServiceCollectionExtensions
 {
     public static IServiceCollection AddApiLogging(this IServiceCollection services,
-        IConfiguration configuration, IWebHostEnvironment environment) =>
-        services.AddLogging(b => b.AddSerilog(new LoggerConfiguration()
-            .MinimumLevel.Debug()
+        IConfiguration configuration, IWebHostEnvironment environment)
+    {
+        var loggingLevelSwitch = new LoggingLevelSwitch(); // по умолч. inform
+        loggingLevelSwitch.MinimumLevel = LogEventLevel.Debug;
+        services.AddSingleton(loggingLevelSwitch);
+
+        loggingLevelSwitch.MinimumLevelChanged += (_, args) => 
+            Console.WriteLine($"Log level was switched from {args.OldLevel} to {args.NewLevel}");
+        
+        return services.AddLogging(b => b.AddSerilog(new LoggerConfiguration()
+            //.MinimumLevel.Debug()
+            .MinimumLevel.ControlledBy(loggingLevelSwitch)
             .Enrich.WithProperty("Application", "TFA.API")
             .Enrich.WithProperty("Environment", environment.EnvironmentName)
             .WriteTo.Logger(lc => lc
@@ -22,6 +32,8 @@ internal static class LoggingServiceCollectionExtensions
                     configuration.GetConnectionString("Logs")!,
                     propertiesAsLabels: ["Application", "Environment"]))
             .CreateLogger()));
+    }
+        
 }
 
 internal class TraceEnricher : ILogEventEnricher
